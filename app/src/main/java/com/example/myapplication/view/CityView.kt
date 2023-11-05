@@ -31,11 +31,10 @@ fun CityView(modifier:Modifier=Modifier,city: City){
             fontSize = 20.sp)
         Spacer(modifier = Modifier.size(15.dp))
         Image(
-            painter = painterResource(id = city.imageUrl), // Replace with your image
-            contentDescription = null, // Provide a description
+            painter = painterResource(id = city.imageUrl),
+            contentDescription = null,
             modifier = Modifier
                 .size(height = 200.dp, width = 300.dp)
-//              .padding(16.dp)
         )
         Text(text = city.description)
         Spacer(modifier = Modifier.size(30.dp))

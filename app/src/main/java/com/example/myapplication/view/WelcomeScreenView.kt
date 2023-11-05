@@ -29,7 +29,6 @@ fun WelcomeScreenView(navController: NavController, modifier:Modifier = Modifier
         Spacer(modifier = modifier.size(50.dp))
         Button(
             onClick = {
-//                viewModel.setSelectedCity("Yerevan") // Set the selected city
                 navController.navigate("second_screen")
                       },
             ) {
