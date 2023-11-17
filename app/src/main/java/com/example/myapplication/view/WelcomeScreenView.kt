@@ -15,12 +15,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.myapplication.utils.Constants
 import com.example.myapplication.viewmodel.LocationViewModel
 
 
 @Composable
 fun WelcomeScreenView(navController: NavController, modifier:Modifier = Modifier, viewModel: LocationViewModel = viewModel()){
-    var response = viewModel.loadTemp("a8e25257bdb84da9a91184359231411", context = LocalContext.current)
+    var response = viewModel.loadTemp(Constants.apiKey, context = LocalContext.current)
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

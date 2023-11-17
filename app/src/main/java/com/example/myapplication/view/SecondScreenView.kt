@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.model.WeatherResponse
+import com.example.myapplication.utils.Constants
 import com.example.myapplication.viewmodel.CityExplorerViewModel
 
 
@@ -59,5 +60,5 @@ fun SecondScreen(navController: NavController, viewModel: CityExplorerViewModel 
 
 }
 fun fetchCity(viewModel: CityExplorerViewModel, cityName: String) {
-    viewModel.loadWeather(cityName, "a8e25257bdb84da9a91184359231411")
+    viewModel.loadWeather(cityName, Constants.apiKey)
 }
