@@ -27,6 +27,7 @@ fun WelcomeScreenView(navController: NavController, modifier:Modifier = Modifier
         Text(text = "Welcome to our City Explorer App!",
             fontSize = 16.sp)
         Spacer(modifier = modifier.size(50.dp))
+        //Text(text = )
         Button(
             onClick = {
                 navController.navigate("second_screen")
