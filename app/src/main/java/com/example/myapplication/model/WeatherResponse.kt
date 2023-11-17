@@ -3,6 +3,7 @@ package com.example.myapplication.model
 import com.google.gson.annotations.SerializedName
 
 data class WeatherResponse (
+    @SerializedName("name") val city:String?,
     @SerializedName("current") val temp: TemperatureInfo?
 )
 data class TemperatureInfo(

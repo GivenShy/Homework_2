@@ -2,24 +2,22 @@ package com.example.myapplication.service
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
-import android.location.Address
+import android.content.pm.PackageManager
 import android.location.Geocoder
-import android.location.Location
 import android.os.Looper
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
+private const val LOCATION_PERMISSION_REQUEST_CODE =34
 class LocationService {
     /**
      * Manages all location related tasks for the app.
@@ -32,13 +30,12 @@ class LocationService {
     lateinit var locationProvider: FusedLocationProviderClient
 
     @SuppressLint("MissingPermission")
-    @Composable
-    fun getUserLocation(context: Context): LatandLong {
+    fun getUserLocation(context: Context): LatandLong? {
 
         // The Fused Location Provider provides access to location APIs.
         locationProvider = LocationServices.getFusedLocationProviderClient(context)
 
-        var currentUserLocation:LatandLong
+        var currentUserLocation:LatandLong? = null
 
 
             locationCallback = object : LocationCallback() {
@@ -65,17 +62,53 @@ class LocationService {
                 locationUpdate()
             } else {
                 askPermissions(
-                    context, REQUEST_LOCATION_PERMISSION, Manifest.permission.ACCESS_FINE_LOCATION,
+                    context, LOCATION_PERMISSION_REQUEST_CODE, Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             }
-            //3
-            onDispose {
-                stopLocationUpdate()
-            }
 
-        //4
+
         return currentUserLocation
+    }
+    @SuppressLint("MissingPermission")
+    fun locationUpdate() {
+        locationCallback.let {
+            //An encapsulation of various parameters for requesting
+            // location through FusedLocationProviderClient.
+            val locationRequest: LocationRequest =
+                LocationRequest.create().apply {
+                    interval = TimeUnit.SECONDS.toMillis(60)
+                    fastestInterval = TimeUnit.SECONDS.toMillis(30)
+                    maxWaitTime = TimeUnit.MINUTES.toMillis(2)
+                    priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                }
+            //use FusedLocationProviderClient to request location update
+            locationProvider.requestLocationUpdates(
+                locationRequest,
+                it,
+                Looper.getMainLooper()
+            )
+        }
+
+    }
+
+    private fun hasPermissions(context: Context, vararg permissions: String): Boolean {
+        for (permission in permissions) {
+            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false
+            }
+        }
+        return true
+    }
+    private fun askPermissions(context: Context, requestCode: Int, vararg permissions: String) {
+        ActivityCompat.requestPermissions(context as Activity, permissions, requestCode)
+    }
+    fun getReadableLocation(latitude: Double, longitude: Double, context: Context): String {
+        val geocoder = Geocoder(context, Locale.getDefault())
+        val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+        val test = addresses?.get(0)?.getAddressLine(0).toString()
+        return test
+
     }
 }
     //data class to store the user Latitude and longitude

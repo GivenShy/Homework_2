@@ -1,5 +1,6 @@
 package com.example.myapplication.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,15 +28,20 @@ class CityExplorerViewModel : ViewModel() {
         City("Paris", R.string.paris,R.drawable.paris)
     )
     fun loadWeather(q: String, apiKey: String) {
-        viewModelScope.launch {
-            val res = repository.loadWeather(q, apiKey)
-            var newMap = HashMap<String, WeatherResponse>()
-            if (_liveDataWeather.value != null) {
-                newMap = _liveDataWeather.value?.let { HashMap(it) }!!
-            }
+        try {
 
-            newMap.set(q, res)
-            _liveDataWeather.postValue(newMap)
+            viewModelScope.launch {
+                val res = repository.loadWeather(q, apiKey)
+                var newMap = HashMap<String, WeatherResponse>()
+                if (_liveDataWeather.value != null) {
+                    newMap = _liveDataWeather.value?.let { HashMap(it) }!!
+                }
+
+                newMap.set(q, res)
+                _liveDataWeather.postValue(newMap)
+            }
+        }catch (ex:Exception){
+            Log.e("CoroutineException", "Exception: ${ex.message}")
         }
     }
 
