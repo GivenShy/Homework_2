@@ -9,6 +9,7 @@ import com.example.myapplication.R
 import com.example.myapplication.model.WeatherResponse
 import com.example.myapplication.repository.WeatherRepository
 import kotlinx.coroutines.launch
+import retrofit2.Response
 
 data class City(
     val name: String,
@@ -18,9 +19,12 @@ data class City(
 class CityExplorerViewModel : ViewModel() {
 
     private val repository = WeatherRepository()
-    private val _liveDataWeather = MutableLiveData<HashMap<String, WeatherResponse>>()
-    val liveDataWeather: LiveData<HashMap<String, WeatherResponse>> = _liveDataWeather
+    private val _liveDataWeather = MutableLiveData<HashMap<String, Response<WeatherResponse>>>()
+    val liveDataWeather: LiveData<HashMap<String, Response<WeatherResponse>>> = _liveDataWeather
 
+    init {
+        _liveDataWeather.value = HashMap<String,Response<WeatherResponse>>()
+    }
     private val cities = listOf(
         City("Yerevan", R.string.yerevan, R.drawable.yerevan),
         City("Washington", R.string.washington,R.drawable.washington ),
@@ -32,7 +36,7 @@ class CityExplorerViewModel : ViewModel() {
 
             viewModelScope.launch {
                 val res = repository.loadWeather(q, apiKey)
-                var newMap = HashMap<String, WeatherResponse>()
+                var newMap = HashMap<String, Response<WeatherResponse>>()
                 if (_liveDataWeather.value != null) {
                     newMap = _liveDataWeather.value?.let { HashMap(it) }!!
                 }
@@ -40,6 +44,7 @@ class CityExplorerViewModel : ViewModel() {
                 newMap.set(q, res)
                 _liveDataWeather.postValue(newMap)
             }
+        //}
         }catch (ex:Exception){
             Log.e("CoroutineException", "Exception: ${ex.message}")
         }

@@ -18,9 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.model.WeatherResponse
 import com.example.myapplication.viewmodel.City
+import com.example.myapplication.viewmodel.TemperatureUnit
 
 @Composable
-fun CityView(modifier:Modifier=Modifier,city: City, weatherResponse: WeatherResponse?){
+fun CityView(modifier:Modifier=Modifier,city: City, weatherResponse: WeatherResponse?,temperatureUnit: TemperatureUnit){
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.Start,
@@ -38,7 +39,12 @@ fun CityView(modifier:Modifier=Modifier,city: City, weatherResponse: WeatherResp
             modifier = Modifier
                 .size(height = 200.dp, width = 300.dp)
         )
-        Text(text = "Temperature: ${weatherResponse?.temp?.degreesC}")
+        weatherResponse?.let{w->
+            when (temperatureUnit){
+                TemperatureUnit.CELSIUS-> Text(text = "Temoerature: ${w.temp?.degreesC} ${temperatureUnit.name}")
+                TemperatureUnit.FAHRENHEIT->Text(text = "Temoerature: ${w.temp?.degreesF} ${temperatureUnit.name}")
+            }
+        }
         Spacer(modifier = modifier.size(5.dp))
         Text(text = stringResource(city.description))
         Spacer(modifier = Modifier.size(30.dp))
