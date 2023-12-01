@@ -120,7 +120,13 @@ fun SecondScreen(navController: NavController, context: Context, viewModel: City
         }
 
         else -> {
-            Text(text = "Something went wrong")
+            Column {
+                Text(text = "Something went wrong")
+                Button(onClick = {navController.navigate("welcome_screen")}) {
+                    Text(text = "Home")
+                }
+            }
+
         }
     }
 

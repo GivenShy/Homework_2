@@ -41,8 +41,8 @@ fun CityView(modifier:Modifier=Modifier,city: City, weatherResponse: WeatherResp
         )
         weatherResponse?.let{w->
             when (temperatureUnit){
-                TemperatureUnit.CELSIUS-> Text(text = "Temoerature: ${w.temp?.degreesC} ${temperatureUnit.name}")
-                TemperatureUnit.FAHRENHEIT->Text(text = "Temoerature: ${w.temp?.degreesF} ${temperatureUnit.name}")
+                TemperatureUnit.CELSIUS-> Text(text = "Temperature: ${w.temp?.degreesC} ${temperatureUnit.formatTemperature()}")
+                TemperatureUnit.FAHRENHEIT->Text(text = "Temoerature: ${w.temp?.degreesF} ${temperatureUnit.formatTemperature()}")
             }
         }
         Spacer(modifier = modifier.size(5.dp))

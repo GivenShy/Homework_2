@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -139,7 +140,8 @@ fun WelcomeScreenView(
         },
         content = {
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -150,56 +152,80 @@ fun WelcomeScreenView(
                     fontSize = 16.sp
                 )
                 Spacer(modifier = modifier.size(50.dp))
-                val marker = LatLng(currentLocation.latitude, currentLocation.longitude)
-                if (permissions.all {
-                        ContextCompat.checkSelfPermission(
-                            context,
-                            it
-                        ) == PackageManager.PERMISSION_GRANTED
-                    }) {
-                    GoogleMap(
-                        modifier = Modifier.size(500.dp),
-                        cameraPositionState = cameraPositionState,
-                        properties = MapProperties(
-                            isMyLocationEnabled = true,
-                            mapType = MapType.HYBRID,
-                            isTrafficEnabled = true
-                        )
-                    ) {
-                        Marker(
-                            state = MarkerState(position = marker),
-                            title = "MyPosition",
-                            snippet = "This is a description of this Marker",
-                            draggable = true
-                        )
-                    }
-                } else {
-                    launchMultiplePermissions.launch(permissions)
-                }
                 Button(
                     onClick = {
                         navController.navigate("second_screen")
                     },
+                    modifier = modifier.fillMaxWidth()
                 ) {
                     Text(text = "Explore Cities")
                 }
-                getTempInCurrentCity(currentLocation, welcomeViewModel)
-                if (liveWeatherResponse.value != null) {
-                    val tempUnit = settingsViewModel.getTemperatureUnitPreference(context)
-                    Temperature(
-                        tempUnit = tempUnit,
-                        weatherResponse = liveWeatherResponse?.value?.body()
-                    )
-                }
 
-                LocationScreen(context, fusedLocationClient, currentLocation)
+                Spacer(modifier = modifier.size(20.dp))
+                if (currentLocation.latitude != 0.toDouble()) {
+                    val marker = LatLng(currentLocation.latitude, currentLocation.longitude)
+                    if (permissions.all {
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                it
+                            ) == PackageManager.PERMISSION_GRANTED
+                        }) {
+                        GoogleMapView(cameraPositionState,marker)
+                    } else {
+                        launchMultiplePermissions.launch(permissions)
+                    }
+                    Spacer(modifier = modifier.size(10.dp))
+                    getTempInCurrentCity(currentLocation, welcomeViewModel)
+                    if (liveWeatherResponse.value != null) {
+                        val tempUnit = settingsViewModel.getTemperatureUnitPreference(context)
+                        Temperature(
+                            tempUnit = tempUnit,
+                            weatherResponse = liveWeatherResponse?.value?.body()
+                        )
+                    }
+                    Spacer(modifier = modifier.size(10.dp))
+                    LocationScreen(context, fusedLocationClient, currentLocation)
+                }
+                Spacer(modifier = modifier.size(15.dp))
+                Button(onClick = {
+                    if (permissions.all {
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                it
+                            ) == PackageManager.PERMISSION_GRANTED
+                        }) {
+                        startLocationUpdates(fusedLocationClient)
+                    } else {
+                        launchMultiplePermissions.launch(permissions)
+                    }
+                }) {
+                    Text(text = "Get location and Temperature")
+                }
 
 
             }
         })
 
 }
-
+@Composable
+fun GoogleMapView(cameraPositionState:CameraPositionState,marker: LatLng){
+    GoogleMap(
+        modifier = Modifier.size(500.dp),
+        cameraPositionState = cameraPositionState,
+        properties = MapProperties(
+            isMyLocationEnabled = true,
+            mapType = MapType.HYBRID,
+            isTrafficEnabled = true
+        )
+    ) {
+        Marker(
+            state = MarkerState(position = marker),
+            title = "MyPosition",
+            snippet = "This is a description of this Marker",
+            draggable = true
+        )
+    }
+}
 @Composable
 fun Temperature(tempUnit: TemperatureUnit, weatherResponse: WeatherResponse?) {
     Row(
@@ -254,26 +280,13 @@ fun LocationScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center) {
         Column(
-            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Your location: ${currentLocation.latitude}/${currentLocation.longitude}")
-            Button(onClick = {
-                if (permissions.all {
-                        ContextCompat.checkSelfPermission(
-                            context,
-                            it
-                        ) == PackageManager.PERMISSION_GRANTED
-                    }) {
-                    startLocationUpdates(fusedLocationClient)
-                } else {
-                    launchMultiplePermissions.launch(permissions)
-                }
-            }) {
-                Text(text = "Get your location")
-            }
+            Text(text = "Your location: ${currentLocation.latitude}/${currentLocation.longitude}",
+                modifier = Modifier.align(Alignment.CenterHorizontally))
         }
     }
 }
