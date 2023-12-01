@@ -3,23 +3,25 @@ package com.example.myapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.view.SecondScreen
+import com.example.myapplication.view.SettingsPage
 import com.example.myapplication.view.WelcomeScreenView
+import com.google.android.gms.location.LocationServices
 
 
+private const val LOCATION_PERMISSION_REQUEST_CODE =34
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        var fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         super.onCreate(savedInstanceState)
+
         setContent {
+
             MyApplicationTheme {
                 val navController = rememberNavController()
 
@@ -28,29 +30,16 @@ class MainActivity : ComponentActivity() {
                     startDestination = "welcome_screen"
                 ) {
                     composable("welcome_screen") {
-                        WelcomeScreenView(navController)
+                        WelcomeScreenView(this@MainActivity,fusedLocationClient,navController)
                     }
                     composable("second_screen") {
-                        SecondScreen(navController)
+                        SecondScreen(navController,this@MainActivity)
+                    }
+                    composable("settings_screen") {
+                        SettingsPage(navController,this@MainActivity)
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyApplicationTheme {
-        Greeting("Android")
     }
 }
