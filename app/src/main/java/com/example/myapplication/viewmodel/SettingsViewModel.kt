@@ -7,9 +7,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-enum class TemperatureUnit(symbol:String) {
-    CELSIUS("C"),
-    FAHRENHEIT("F")
+enum class TemperatureUnit(val unitName:String) {
+    CELSIUS("°C"),
+    FAHRENHEIT("°F");
+    fun formatTemperature(): String {
+        return "$unitName"
+    }
 }
 
 class SettingsViewModel : ViewModel() {

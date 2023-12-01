@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -32,15 +32,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.myapplication.R
+import com.example.myapplication.model.WeatherResponse
 import com.example.myapplication.utils.Constants
 import com.example.myapplication.viewmodel.SettingsViewModel
 import com.example.myapplication.viewmodel.TemperatureUnit
@@ -84,9 +85,9 @@ fun WelcomeScreenView(
         mutableStateOf(LatLng(0.toDouble(), 0.toDouble()))
     }
 
-    val cameraPosition  = rememberCameraPositionState{
+    val cameraPosition = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
-            currentLocation,10f
+            currentLocation, 10f
         )
     }
 
@@ -101,13 +102,13 @@ fun WelcomeScreenView(
                 currentLocation = LatLng(location.latitude, location.longitude)
                 cameraPositionState = CameraPositionState(
                     position = CameraPosition.fromLatLngZoom(
-                        currentLocation,10f
+                        currentLocation, 10f
                     )
                 )
             }
         }
     }
-  val image: Painter = painterResource(id = R.drawable.free_settings_icon_3110_thumb)
+    val image: Painter = painterResource(id = R.drawable.free_settings_icon_3110_thumb)
 
     val launchMultiplePermissions = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -138,10 +139,12 @@ fun WelcomeScreenView(
         },
         content = {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(modifier = modifier.size(50.dp))
                 Text(
                     text = "Welcome to our City Explorer App!",
                     fontSize = 16.sp
@@ -154,23 +157,23 @@ fun WelcomeScreenView(
                             it
                         ) == PackageManager.PERMISSION_GRANTED
                     }) {
-                GoogleMap(
-                    modifier = Modifier.size(500.dp),
-                    cameraPositionState = cameraPositionState,
-                    properties = MapProperties(
-                        isMyLocationEnabled = true,
-                        mapType = MapType.HYBRID,
-                        isTrafficEnabled = true
-                    )
-                ) {
-                    Marker(
-                        state = MarkerState(position = marker),
-                        title = "MyPosition",
-                        snippet = "This is a description of this Marker",
-                        draggable = true
-                    )
+                    GoogleMap(
+                        modifier = Modifier.size(500.dp),
+                        cameraPositionState = cameraPositionState,
+                        properties = MapProperties(
+                            isMyLocationEnabled = true,
+                            mapType = MapType.HYBRID,
+                            isTrafficEnabled = true
+                        )
+                    ) {
+                        Marker(
+                            state = MarkerState(position = marker),
+                            title = "MyPosition",
+                            snippet = "This is a description of this Marker",
+                            draggable = true
+                        )
                     }
-                }else{
+                } else {
                     launchMultiplePermissions.launch(permissions)
                 }
                 Button(
@@ -180,51 +183,56 @@ fun WelcomeScreenView(
                 ) {
                     Text(text = "Explore Cities")
                 }
-
-                Row {
-                    // Display weather icon (e.g., sunny icon for warm temperature)
-                    Icon(
-                        imageVector = Icons.Default.WbSunny,
-                        contentDescription = "Weather Icon",
-                        tint = Color.Yellow, // You can customize the color based on temperature
-                        modifier = Modifier.padding(end = 4.dp)
-                    )
-
-                    // Display temperature value
-                    Text(
-                        text = "$temperature",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(end = 4.dp)
-                    )
-
-                    // Display temperature unit (e.g., °C or °F)
-                    Text(
-                        text = unit,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
-                getTempInCurrentCity(currentLocation,welcomeViewModel)
-                if(liveWeatherResponse.value!=null){
+                getTempInCurrentCity(currentLocation, welcomeViewModel)
+                if (liveWeatherResponse.value != null) {
                     val tempUnit = settingsViewModel.getTemperatureUnitPreference(context)
-                    when(tempUnit){
-                        TemperatureUnit.CELSIUS -> Text(text = "Temperature: ${liveWeatherResponse?.value?.body()?.temp?.degreesC} ${tempUnit.name}")
-                        TemperatureUnit.FAHRENHEIT -> Text(text = "Temperature: ${liveWeatherResponse?.value?.body()?.temp?.degreesF} ${tempUnit.name}")
-                    }
-                }else{
-                    Text(text = "Null")
+                    Temperature(
+                        tempUnit = tempUnit,
+                        weatherResponse = liveWeatherResponse?.value?.body()
+                    )
                 }
 
                 LocationScreen(context, fusedLocationClient, currentLocation)
-
 
 
             }
         })
 
 }
+
+@Composable
+fun Temperature(tempUnit: TemperatureUnit, weatherResponse: WeatherResponse?) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Display weather icon (e.g., sunny icon for warm temperature)
+        Image(
+            painter = painterResource(id = R.drawable.download),
+            contentDescription = "Temperature"
+        )
+        Spacer(modifier = Modifier.size(20.dp))
+        var temp: String? = weatherResponse?.temp?.degreesC
+        when (tempUnit) {
+            TemperatureUnit.CELSIUS -> temp = weatherResponse?.temp?.degreesC
+            TemperatureUnit.FAHRENHEIT -> temp = weatherResponse?.temp?.degreesF
+        }
+        Text(
+            text = "$temp",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(end = 4.dp)
+        )
+
+
+        Text(
+            text = tempUnit.formatTemperature(),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+    }
+}
+
 
 @Composable
 fun LocationScreen(
@@ -290,6 +298,6 @@ fun startLocationUpdates(fusedLocationClient: FusedLocationProviderClient) {
     }
 }
 
-fun getTempInCurrentCity(coord:LatLng,viewModel: WelcomeViewModel){
-    viewModel.loadWeatherFromCurrentCity("${coord.latitude},${coord.longitude}",Constants.apiKey)
+fun getTempInCurrentCity(coord: LatLng, viewModel: WelcomeViewModel) {
+    viewModel.loadWeatherFromCurrentCity("${coord.latitude},${coord.longitude}", Constants.apiKey)
 }
